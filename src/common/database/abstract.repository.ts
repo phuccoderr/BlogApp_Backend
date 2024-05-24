@@ -12,7 +12,7 @@ export abstract class AbstractRepository<T extends AbstractEntity> {
       ...document,
       _id: new Types.ObjectId(),
     });
-    return (await createdDocument.save()).toJSON as unknown as T;
+    return (await createdDocument.save()) as T;
   }
 
   async findOne(filterQuery: FilterQuery<T>): Promise<T> {
