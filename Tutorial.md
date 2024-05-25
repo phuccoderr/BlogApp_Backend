@@ -17,3 +17,14 @@ npm install migrate-mongo
 npm i -D @types/migrate-mongo
 npm i mongodb
 ```
+
+# Install JWT
+
+```
+npm i @nestjs/passport passport passport-local
+npm i -D @types/passport-local
+npm i @nestjs/jwt passport-jwt
+npm i -D @types/passport-jwt
+npm i cookie-parser
+npm i @types/cookie-parser
+```

@@ -8,6 +8,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UsersModule } from './users/users.module';
 import { Logger, LoggerModule } from 'nestjs-pino';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { Logger, LoggerModule } from 'nestjs-pino';
     UsersModule,
     LoggerModule.forRootAsync({
       useFactory: (configService: ConfigService) => {
-        const isProduction = configService.get('NODE_ENV') === 'production';
+        const isProduction = configService.get('NODE_ENV') !== 'production';
         return {
           pinoHttp: {
             transport: isProduction
@@ -42,6 +43,7 @@ import { Logger, LoggerModule } from 'nestjs-pino';
       },
       inject: [ConfigService],
     }),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
