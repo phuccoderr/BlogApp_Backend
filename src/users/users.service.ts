@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { CreateUserInput } from './dto/create-user.input';
@@ -13,10 +14,16 @@ export class UsersService {
   constructor(private readonly userRepository: UserRepository) {}
 
   async create(createUserInput: CreateUserInput) {
-    return this.userRepository.create({
-      ...createUserInput,
-      password: await this.hashPassword(createUserInput.password),
-    });
+    try {
+      return await this.userRepository.create({
+        ...createUserInput,
+        password: await this.hashPassword(createUserInput.password),
+      });
+    } catch (error) {
+      if (error.message.includes('E11000')) {
+        throw new UnprocessableEntityException('Email already exits');
+      }
+    }
   }
 
   private async hashPassword(password: string) {
