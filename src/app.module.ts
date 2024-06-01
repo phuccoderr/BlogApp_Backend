@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module, UnauthorizedException } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -7,9 +7,12 @@ import { DatabaseModule } from './common/database/database.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { UsersModule } from './users/users.module';
-import { Logger, LoggerModule } from 'nestjs-pino';
+import { LoggerModule } from 'nestjs-pino';
 import { AuthModule } from './auth/auth.module';
 import { ChatsModule } from './chats/chats.module';
+import { PubSubModule } from './common/pub/pubsub.module';
+import { Request } from 'express';
+import { AuthService } from './auth/auth.service';
 
 @Module({
   imports: [
@@ -19,9 +22,27 @@ import { ChatsModule } from './chats/chats.module';
         MONGODB_URI: Joi.string().required(),
       }),
     }),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
+    GraphQLModule.forRootAsync<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: true,
+      useFactory: (authService: AuthService) => ({
+        autoSchemaFile: true,
+        subscriptions: {
+          'graphql-ws': {
+            onConnect: (context: any) => {
+              try {
+                const request: Request = context.extra.request;
+                const user = authService.verifyWS(request);
+                context.user = user;
+              } catch (error) {
+                new Logger().error(error);
+                throw new UnauthorizedException();
+              }
+            },
+          },
+        },
+      }),
+      imports: [AuthModule],
+      inject: [AuthService],
     }),
     DatabaseModule,
     UsersModule,
@@ -46,6 +67,7 @@ import { ChatsModule } from './chats/chats.module';
     }),
     AuthModule,
     ChatsModule,
+    PubSubModule,
   ],
   controllers: [AppController],
   providers: [AppService],

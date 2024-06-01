@@ -28,3 +28,9 @@ npm i -D @types/passport-jwt
 npm i cookie-parser
 npm i @types/cookie-parser
 ```
+
+# Install WebSocket Graph ql
+
+```
+npm i graphql-subscriptions graphql-ws
+```
