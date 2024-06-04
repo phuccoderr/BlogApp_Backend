@@ -7,6 +7,7 @@ import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/auth/guards/gql-auth.guards';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { TokenPayLoad } from 'src/auth/token-payload.interface';
+import { ChatDocument } from './entities/chat.document';
 
 @Resolver(() => Chat)
 export class ChatsResolver {
@@ -23,8 +24,8 @@ export class ChatsResolver {
 
   @UseGuards(GqlAuthGuard)
   @Query(() => [Chat], { name: 'chats' })
-  findAll(@CurrentUser() user: TokenPayLoad) {
-    return this.chatsService.findAll(user._id);
+  findAll() {
+    return this.chatsService.findMany();
   }
 
   @Query(() => Chat, { name: 'chat' })
